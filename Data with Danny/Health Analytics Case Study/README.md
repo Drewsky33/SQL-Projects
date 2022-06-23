@@ -16,5 +16,7 @@ SELECT
   * 
 FROM health.user_logs;
 
+```
+
 **OUTPUT**:
 <img width="1290" alt="image" src="https://user-images.githubusercontent.com/77873198/175191501-d7229774-59fc-4cf8-93e0-fbff19decd83.png">
