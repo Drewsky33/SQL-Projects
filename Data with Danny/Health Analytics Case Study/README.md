@@ -39,6 +39,7 @@ FROM health.user_logs;
 ```
 
 **OUTPUT**:
+
 <img width="290" alt="Screen Shot 2022-06-22 at 8 09 40 PM" src="https://user-images.githubusercontent.com/77873198/175192609-fc3726d3-44a6-4fbc-93af-2d29a356a69f.png">
 
 It looks like we have 3 main measures which are:
@@ -55,6 +56,8 @@ FROM health.user_logs;
 
 ```
 **OUTPUT**:
+
+
 <img width="185" alt="image" src="https://user-images.githubusercontent.com/77873198/175192529-c5f789db-a35b-47ff-a47a-4b5d8ffabdaa.png">
 
 
