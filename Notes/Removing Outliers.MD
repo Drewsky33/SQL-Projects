@@ -31,7 +31,10 @@ FROM health.user_logs;
 
 ```
 
--- Calculate the average values across each measure 
+-- Calculate the average values across each measure
+
+``` sql
+
 SELECT
   measure, 
   COUNT(*) AS counts, 
@@ -40,9 +43,14 @@ FROM health.user_logs
 GROUP BY measure 
 ORDER BY counts DESC;
 
+```
+
 -- The median: all number lined up from smallest to largest in uniformity. Number in the middle or the average of the two most middle numbers. 
 -- Ther mode: Similar to a group by and count aggregation function 
 -- Practice:
+
+``` sql
+
 WITH sample_data (example_values) AS (
   VALUES
   (82), (51), (144), (84), (120), (148), (148), (108), (160), (86)
@@ -54,7 +62,11 @@ SELECT
   MODE() WITHIN GROUP (ORDER BY example_values) AS mode_value
 FROM sample_data;
 
--- Apply these to our dataset 
+```
+-- Apply these to our dataset
+
+``` sql
+
 SELECT
   AVG(measure_value) AS mean_value,
   PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY measure_value) AS median_value,
@@ -62,8 +74,14 @@ SELECT
 FROM health.user_logs
 WHERE measure = 'weight';
 
+```
+
+
 -- Spread statistics: The min, max, and the range 
--- Calculating them for the measure value column 
+-- Calculating them for the measure value column
+
+``` sql
+
 SELECT
   MIN(measure_value) AS minimum_value, 
   MAX(measure_value) AS maximum_value,
@@ -71,7 +89,12 @@ SELECT
 FROM health.user_logs
 WHERE measure = 'weight';
 
--- Improving efficiency 
+```
+
+-- Improving efficiency
+
+``` sql
+
 EXPLAIN ANALYZE
 WITH min_max_values AS (
   SELECT
@@ -87,7 +110,12 @@ SELECT
   maximum_value - minimum_value AS range_value
 FROM min_max_values;
 
--- Variance and Standard Deviation : Used to describe the spread of the data and the proportion of which parts of data fall within different levels of spread. 
+```
+
+-- Variance and Standard Deviation : Used to describe the spread of the data and the proportion of which parts of data fall within different levels of spread.
+
+``` sql
+
 WITH sample_data (example_values) AS (
   VALUES
   (82), (51), (144), (84), (120), (148), (148), (108), (160), (86)
@@ -101,7 +129,11 @@ SELECT
   MODE() WITHIN GROUP (ORDER BY example_values) AS mode_value
 FROM sample_data;
 
+```
+
 -- Practical example: Calculating all of the summary statistics 
+
+``` sql
 
 SELECT
   'weight' AS measure, 
@@ -121,7 +153,12 @@ SELECT
 FROM health.user_logs
 WHERE measure = 'weight';
 
+```
+
 -- Exercise 1: What is the average, median, and mode values of blood glucose values to 2 decimal places
+
+``` sql
+
 SELECT
   ROUND(AVG(measure_value), 2) AS average_value,
   ROUND(
@@ -135,7 +172,13 @@ SELECT
 FROM health.user_logs
 WHERE measure = 'blood_glucose';
 
+```
+
+
 -- Exercise 2: What is themost frequently occuring measure_value for all blood glucose measurements
+
+``` sql
+
 SELECT
   measure_value, 
   COUNT(*) AS counts
@@ -145,8 +188,13 @@ GROUP BY 1
 ORDER BY 2 DESC
 LIMIT 10;
 
+```
+
 
 -- Exercise 3: Calculate the two coefficients of skewness for blood glucose measures given the following formulas 
+
+``` sql
+
 
 WITH cte_blood_glucose AS (
  SELECT
@@ -167,16 +215,27 @@ SELECT
   3 * (mean_value - median_value) / stddev_value AS pearson_2
 FROM cte_blood_glucose;
 
+```
+
 -- Cumulative distribution functions 
 
 -- Reverse engineering: 1. Order all of the values from largest to smallest, split them into 100 buckets for percentiles, for each bucket calc the min, max, count records 
--- Count how many records we had when the measure was equal to weight 
+-- Count how many records we had when the measure was equal to weight
+
+``` sql
+
 SELECT
   COUNT(*) AS counts
 FROM health.user_logs
 WHERE measure = 'weight';
 
+```
+
 -- SQL implementation of this process 
+
+``` sql
+
+
 SELECT
   measure_value, 
   NTILE(100) OVER (
@@ -186,7 +245,13 @@ SELECT
 FROM health.user_logs
 WHERE measure = 'weight';
 
+```
+
 -- Part 2:
+
+``` sql
+
+
 WITH percentile_values AS (
   SELECT
     measure_value,
@@ -206,8 +271,14 @@ FROM percentile_values
 GROUP BY percentile
 ORDER BY percentile;
 
+```
+
 -- Using window functions to sort values 
 -- Application: Diving into the 100th percentile outliers
+
+
+``` sql
+
 WITH percentile_values AS (
   SELECT
     measure_value, 
@@ -229,8 +300,13 @@ FROM percentile_Values
 WHERE percentile = 100
 ORDER BY measure_value DESC;
 
+```
+
 -- Practice Exercise: What is the difference between ROW_NUMBER, RANK, DENSE_RANK window functions 
--- Next: Investigating small outliers 
+-- Next: Investigating small outliers
+
+``` sql
+
 WITH percentile_values AS (
   SELECT
     measure_value, 
@@ -252,7 +328,13 @@ WHERE percentile = 1
 ORDER BY measure_value;
 
 
+```
+
+
 -- Observing large outliers
+
+``` sql
+
 WITH percentile_values AS (
   SELECT
     measure_value, 
@@ -273,7 +355,13 @@ FROM percentile_values
 WHERE percentile = 100
 ORDER BY measure_value DESC;
 
--- Checking at small outliers as well 
+```
+
+-- Checking at small outliers as well
+
+``` sql
+
+
 WITH percentile_values AS (
   SELECT
     measure_value, 
@@ -294,7 +382,13 @@ FROM percentile_values
 WHERE percentile = 1
 ORDER BY measure_value;
 
+```
+
 -- Removing outliers
+
+``` sql
+
+
 DROP TABLE IF EXISTS clean_weight_logs;
 CREATE TEMP TABLE clean_weight_logs AS (
   SELECT *
@@ -304,7 +398,13 @@ CREATE TEMP TABLE clean_weight_logs AS (
     AND measure_value < 201
 );
 
--- Calculate summary statistics on filtered data 
+```
+
+
+-- Calculate summary statistics on filtered data
+
+``` sql
+
 SELECT
   ROUND(MIN(measure_value), 2) AS minimum_value, 
   ROUND(MAX(measure_value), 2) AS maximum_value,
@@ -321,7 +421,12 @@ SELECT
   ROUND(VARIANCE(measure_value), 2) AS variance_value
 FROM clean_weight_logs;
 
--- Use the cumulative distribution functions from before with the treated/cleaned data 
+```
+
+-- Use the cumulative distribution functions from before with the treated/cleaned data
+
+``` sql
+
 WITH percentile_values AS (
   SELECT
     measure_value, 
@@ -341,15 +446,24 @@ FROM percentile_values
 GROUP BY percentile
 ORDER BY percentile;
 
+``` 
 
--- Create ranges for bucketing function 
+
+-- Create ranges for bucketing function
+
+``` sql
+
 SELECT
   MIN(measure_value) AS minimum_value,
   MAX(measure_value) AS maximum_value
 FROM clean_weight_logs;
 
+```
 
--- Choosing the min, max, and number of buckets for viz 
+-- Choosing the min, max, and number of buckets for viz
+
+``` sql
+
 SELECT
   WIDTH_BUCKET(measure_value, 0, 200, 50) AS bucket, 
   AVG(measure_value) AS mean_value, 
@@ -357,3 +471,5 @@ SELECT
 FROM clean_weight_logs
 GROUP BY bucket
 ORDER BY bucket;
+
+```
